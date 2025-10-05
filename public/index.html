@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Profile Shield</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top, #00111a, #000);
+      color: #00bfff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #00bfff;
+      border-radius: 15px;
+      padding: 30px;
+      width: 360px;
+      text-align: center;
+      box-shadow: 0 0 25px #00bfff;
+      animation: glow 3s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 15px #00bfff; }
+      to { box-shadow: 0 0 30px #00ffff; }
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #00ffff;
+      text-shadow: 0 0 15px #00bfff;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    input {
+      background: rgba(0, 15, 25, 0.8);
+      color: #00ffff;
+      border: 1px solid #00bfff;
+    }
+
+    select {
+      background: rgba(0, 15, 25, 0.8);
+      color: #00ffff;
+      border: 1px solid #00bfff;
+    }
+
+    button {
+      background: #00bfff;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #00ffff;
+      color: #000;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
+    }
+
+    .result {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success {
+      color: #00ff99;
+      border: 1px solid #00ff99;
+    }
+
+    .error {
+      color: #ff5050;
+      border: 1px solid #ff5050;
+    }
+
+    .loader {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .loader span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00ffff;
+      border-radius: 50%;
+      animation: bounce 0.8s infinite alternate;
+    }
+
+    .loader span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loader span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      to {
+        opacity: 0.3;
+        transform: translateY(-8px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🛡️ Facebook Profile Shield</h2>
+    <input type="text" id="token" placeholder="Enter Facebook Access Token">
+    <select id="toggle">
+      <option value="true">Enable Shield</option>
+      <option value="false">Disable Shield</option>
+    </select>
+    <button id="submit">Activate</button>
+
+    <div class="loader" id="loader">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    const button = document.getElementById('submit');
+    const loader = document.getElementById('loader');
+    const result = document.getElementById('result');
+
+    button.addEventListener('click', async () => {
+      const token = document.getElementById('token').value.trim();
+      const enable = document.getElementById('toggle').value;
+
+      if (!token) {
+        result.style.display = 'block';
+        result.className = 'result error';
+        result.textContent = '⚠️ Please enter your Facebook token.';
+        return;
+      }
+
+      loader.style.display = 'block';
+      result.style.display = 'none';
+      button.disabled = true;
+      button.textContent = 'Processing...';
+
+      try {
+        const res = await fetch(`https://wrapped-rest-apis.vercel.app/api/guard?token=${encodeURIComponent(token)}&enable=${enable}`);
+        const data = await res.json();
+
+        loader.style.display = 'none';
+        result.style.display = 'block';
+
+        if (data.result?.success) {
+          result.className = 'result success';
+          result.textContent = `✅ Shield ${enable === 'true' ? 'enabled' : 'disabled'} successfully!`;
+        } else {
+          result.className = 'result error';
+          result.textContent = '❌ Failed to update. Invalid or expired token.';
+        }
+      } catch (err) {
+        loader.style.display = 'none';
+        result.style.display = 'block';
+        result.className = 'result error';
+        result.textContent = `❌ Error fetching API: ${err.message}`;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Activate';
+      }
+    });
+  </script>
+</body>
+</html>
